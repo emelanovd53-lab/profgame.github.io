@@ -1,7 +1,6 @@
-// Глобальные переменные для доступа из любого места
 var tg = window.Telegram.WebApp;
-var scores = { tech: 0, bio: 0, creativ: 0, mgmt: 0 };
 var currentStep = 0;
+var scores = { tech: 0, bio: 0, creativ: 0, mgmt: 0 };
 
 var QUESTS = [
     {
@@ -186,64 +185,74 @@ var QUESTS = [
     }
 ];
 
-// Инициализация при загрузке
-window.onload = function () {
-    if (tg.expand) tg.expand();
+// Функция запуска
+function startApp() {
+    if (tg && tg.expand) tg.expand();
     loadQuest();
-};
+
+    // Привязываем кнопку результата
+    var sendBtn = document.getElementById('send-data-btn');
+    if (sendBtn) {
+        sendBtn.onclick = function () {
+            try {
+                if (tg && tg.sendData) {
+                    tg.sendData(JSON.stringify(scores));
+                    tg.close();
+                } else {
+                    alert("Результаты: " + JSON.stringify(scores));
+                }
+            } catch (e) {
+                alert("Ошибка: " + e.message);
+            }
+        };
+    }
+}
 
 function loadQuest() {
     var quest = QUESTS[currentStep];
     var qText = document.getElementById('question-text');
     var optionsCont = document.getElementById('options-container');
-    var progressBar = document.getElementById('progress-bar');
+    var pBar = document.getElementById('progress-bar');
 
-    if (!qText || !optionsCont || !progressBar) return;
+    if (!qText || !optionsCont) return;
 
     qText.innerText = quest.text;
     optionsCont.innerHTML = '';
 
-    progressBar.style.width = ((currentStep / QUESTS.length) * 100) + '%';
+    if (pBar) {
+        pBar.style.width = ((currentStep / QUESTS.length) * 100) + '%';
+    }
 
     quest.options.forEach(function (opt) {
         var btn = document.createElement('button');
         btn.className = 'option-btn';
         btn.innerText = opt.text;
-        btn.onclick = function () { handleChoice(opt.cat); };
+        btn.onclick = function () {
+            scores[opt.cat]++;
+            currentStep++;
+            if (currentStep < QUESTS.length) {
+                loadQuest();
+            } else {
+                showFinish();
+            }
+        };
         optionsCont.appendChild(btn);
     });
 }
 
-function handleChoice(cat) {
-    scores[cat]++;
-    currentStep++;
+function showFinish() {
+    var pBar = document.getElementById('progress-bar');
+    var gCont = document.getElementById('game-container');
+    var fCont = document.getElementById('finish-container');
 
-    if (currentStep < QUESTS.length) {
-        loadQuest();
-    } else {
-        finishGame();
-    }
+    if (pBar) pBar.style.width = '100%';
+    if (gCont) gCont.style.display = 'none';
+    if (fCont) fCont.style.display = 'block';
 }
 
-function finishGame() {
-    var progressBar = document.getElementById('progress-bar');
-    var gameCont = document.getElementById('game-container');
-    var finishCont = document.getElementById('finish-container');
-    var sendBtn = document.getElementById('send-data-btn');
-
-    if (progressBar) progressBar.style.width = '100%';
-    if (gameCont) gameCont.style.display = 'none';
-    if (finishCont) finishCont.style.display = 'block';
-
-    if (sendBtn) {
-        sendBtn.onclick = function () {
-            // Самый важный момент для телефона
-            try {
-                tg.sendData(JSON.stringify(scores));
-                tg.close();
-            } catch (e) {
-                alert("Ошибка отправки данных: " + e.message);
-            }
-        };
-    }
+// Запуск при полной загрузке
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startApp);
+} else {
+    startApp();
 }
