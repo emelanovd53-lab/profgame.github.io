@@ -1,12 +1,9 @@
-window.addEventListener('load', function () {
-    var tg = window.Telegram.WebApp;
-    if (tg.expand) {
-        tg.expand();
-    }
-    // ... rest of the logic remains the same, but wrapped in load
-});
+// Глобальные переменные для доступа из любого места
+var tg = window.Telegram.WebApp;
+var scores = { tech: 0, bio: 0, creativ: 0, mgmt: 0 };
+var currentStep = 0;
 
-const QUESTS = [
+var QUESTS = [
     {
         text: "1. Утро понедельника. Как ты начинаешь свой день?",
         options: [
@@ -73,7 +70,7 @@ const QUESTS = [
     {
         text: "8. На что ты тратишь свободный вечер?",
         options: [
-            { text: "👾 Игры или кодинг", cat: "tech" },
+            { text: "👾 Игры или хобби", cat: "tech" },
             { text: "🏃‍♂️ Спорт или прогулка", cat: "bio" },
             { text: "🎸 Музыка или рисование", cat: "creativ" },
             { text: "🥂 Встреча с друзьями", cat: "mgmt" }
@@ -189,28 +186,30 @@ const QUESTS = [
     }
 ];
 
-let currentStep = 0;
-let scores = { tech: 0, bio: 0, creativ: 0, mgmt: 0 };
-
-const qText = document.getElementById('question-text');
-const optionsCont = document.getElementById('options-container');
-const progressBar = document.getElementById('progress-bar');
-const gameCont = document.getElementById('game-container');
-const finishCont = document.getElementById('finish-container');
-const sendBtn = document.getElementById('send-data-btn');
+// Инициализация при загрузке
+window.onload = function () {
+    if (tg.expand) tg.expand();
+    loadQuest();
+};
 
 function loadQuest() {
-    const quest = QUESTS[currentStep];
+    var quest = QUESTS[currentStep];
+    var qText = document.getElementById('question-text');
+    var optionsCont = document.getElementById('options-container');
+    var progressBar = document.getElementById('progress-bar');
+
+    if (!qText || !optionsCont || !progressBar) return;
+
     qText.innerText = quest.text;
     optionsCont.innerHTML = '';
 
-    progressBar.style.width = `${(currentStep / QUESTS.length) * 100}%`;
+    progressBar.style.width = ((currentStep / QUESTS.length) * 100) + '%';
 
-    quest.options.forEach(opt => {
-        const btn = document.createElement('button');
+    quest.options.forEach(function (opt) {
+        var btn = document.createElement('button');
         btn.className = 'option-btn';
         btn.innerText = opt.text;
-        btn.onclick = () => handleChoice(opt.cat);
+        btn.onclick = function () { handleChoice(opt.cat); };
         optionsCont.appendChild(btn);
     });
 }
@@ -227,13 +226,24 @@ function handleChoice(cat) {
 }
 
 function finishGame() {
-    progressBar.style.width = '100%';
-    gameCont.classList.add('hidden');
-    finishCont.classList.remove('hidden');
+    var progressBar = document.getElementById('progress-bar');
+    var gameCont = document.getElementById('game-container');
+    var finishCont = document.getElementById('finish-container');
+    var sendBtn = document.getElementById('send-data-btn');
+
+    if (progressBar) progressBar.style.width = '100%';
+    if (gameCont) gameCont.style.display = 'none';
+    if (finishCont) finishCont.style.display = 'block';
+
+    if (sendBtn) {
+        sendBtn.onclick = function () {
+            // Самый важный момент для телефона
+            try {
+                tg.sendData(JSON.stringify(scores));
+                tg.close();
+            } catch (e) {
+                alert("Ошибка отправки данных: " + e.message);
+            }
+        };
+    }
 }
-
-sendBtn.onclick = () => {
-    tg.sendData(JSON.stringify(scores));
-};
-
-loadQuest();
