@@ -185,27 +185,9 @@ var QUESTS = [
     }
 ];
 
-// Функция запуска
 function startApp() {
     if (tg && tg.expand) tg.expand();
     loadQuest();
-
-    // Привязываем кнопку результата
-    var sendBtn = document.getElementById('send-data-btn');
-    if (sendBtn) {
-        sendBtn.onclick = function () {
-            try {
-                if (tg && tg.sendData) {
-                    tg.sendData(JSON.stringify(scores));
-                    tg.close();
-                } else {
-                    alert("Результаты: " + JSON.stringify(scores));
-                }
-            } catch (e) {
-                alert("Ошибка: " + e.message);
-            }
-        };
-    }
 }
 
 function loadQuest() {
@@ -233,24 +215,36 @@ function loadQuest() {
             if (currentStep < QUESTS.length) {
                 loadQuest();
             } else {
-                showFinish();
+                finishAndSend();
             }
         };
         optionsCont.appendChild(btn);
     });
 }
 
-function showFinish() {
+function finishAndSend() {
     var pBar = document.getElementById('progress-bar');
-    var gCont = document.getElementById('game-container');
-    var fCont = document.getElementById('finish-container');
+    var qText = document.getElementById('question-text');
+    var oCont = document.getElementById('options-container');
 
     if (pBar) pBar.style.width = '100%';
-    if (gCont) gCont.classList.add('hidden');
-    if (fCont) fCont.classList.remove('hidden');
+    if (qText) qText.innerText = "Результаты отправляются...";
+    if (oCont) oCont.innerHTML = '<div class="loader"></div>';
+
+    // Мгновенная отправка
+    try {
+        if (tg && tg.sendData) {
+            tg.sendData(JSON.stringify(scores));
+            setTimeout(function () { tg.close(); }, 100);
+        } else {
+            alert("Тест завершен! Результаты: " + JSON.stringify(scores));
+        }
+    } catch (e) {
+        console.error(e);
+    }
 }
 
-// Запуск при полной загрузке
+// Запуск
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', startApp);
 } else {
