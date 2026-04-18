@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Dashboard</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --accent: #38bdf8;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-top: 5px;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .user-item {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--accent);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .user-detail {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .user-step {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .refresh-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            width: 100%;
+            font-weight: 700;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        .loader {
+            text-align: center;
+            padding: 50px;
+            color: var(--muted);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading" class="loader">Получение данных...</div>
+
+    <div id="content" style="display: none;">
+        <div class="header">
+            <h1 style="font-size: 1.5rem; margin: 0;">Центр управления</h1>
+            <p style="color: var(--muted); font-size: 0.9rem;">Пульс вашего бота</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span id="total-users" class="stat-value">0</span>
+                <span class="stat-label">Всего</span>
+            </div>
+            <div class="stat-card">
+                <span id="registered-users" class="stat-value">0</span>
+                <span class="stat-label">Лиды</span>
+            </div>
+            <div class="stat-card">
+                <span id="completed-games" class="stat-value">0</span>
+                <span class="stat-label">Прошли</span>
+            </div>
+            <div class="stat-card">
+                <span id="conv-rate" class="stat-value">0%</span>
+                <span class="stat-label">Конверсия</span>
+            </div>
+        </div>
+
+        <div class="section-title">
+            <span>🕒 Недавняя активность</span>
+        </div>
+
+        <div id="user-list" class="user-list">
+            <!-- Dynamic users -->
+        </div>
+
+        <button class="refresh-btn" onclick="location.reload()">Обновить данные</button>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+
+        // Parse data from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const rawData = urlParams.get('data');
+
+        if (rawData) {
+            try {
+                const data = JSON.parse(decodeURIComponent(rawData));
+                renderDashboard(data);
+            } catch (e) {
+                document.getElementById('loading').innerText = 'Ошибка загрузки данных';
+            }
+        } else {
+            document.getElementById('loading').innerText = 'Данные не получены';
+        }
+
+        function renderDashboard(data) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+
+            document.getElementById('total-users').innerText = data.total;
+            document.getElementById('registered-users').innerText = data.registered;
+            document.getElementById('completed-games').innerText = data.completed;
+
+            const rate = data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0;
+            document.getElementById('conv-rate').innerText = rate + '%';
+
+            const listCont = document.getElementById('user-list');
+            listCont.innerHTML = '';
+
+            data.recent.forEach(user => {
+                const div = document.createElement('div');
+                div.className = 'user-item';
+                div.innerHTML = `
+                    <div class="user-info">
+                        <span class="user-name">${user.name}</span>
+                        <span class="user-detail">${user.username} | ${user.school}</span>
+                    </div>
+                    <div class="user-step">Этап: ${user.step}</div>
+                `;
+                listCont.appendChild(div);
+            });
+        }
+    </script>
+</body>
+
+</html>
