@@ -1,5 +1,10 @@
-const tg = window.Telegram.WebApp;
-tg.expand();
+window.addEventListener('load', function () {
+    var tg = window.Telegram.WebApp;
+    if (tg.expand) {
+        tg.expand();
+    }
+    // ... rest of the logic remains the same, but wrapped in load
+});
 
 const QUESTS = [
     {
