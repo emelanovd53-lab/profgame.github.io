@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,25 +8,26 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div id="app">
+        <div class="version-tag">Версия: 3.0 (20 вопросов)</div>
         <div class="progress-container">
             <div id="progress-bar" class="progress-bar"></div>
         </div>
-        
+
         <div id="game-container" class="card">
             <h2 id="question-text">Загрузка...</h2>
-            <div id="options-container" class="options">
-                <!-- Кнопки появятся здесь -->
-            </div>
+            <div id="options-container" class="options"></div>
         </div>
 
         <div id="finish-container" class="card hidden">
             <h2>Тест пройден! 🚀</h2>
-            <p>Нажми кнопку ниже, чтобы отправить результаты боту и получить свой профессиональный портрет.</p>
+            <p>Нажми кнопку ниже, чтобы отправить результаты боту.</p>
             <button id="send-data-btn" class="main-button">Узнать результат</button>
         </div>
     </div>
     <script src="script.js"></script>
 </body>
+
 </html>
