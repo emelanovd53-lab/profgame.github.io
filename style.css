@@ -103,14 +103,15 @@ h2 {
 
 .option-btn {
     background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Одинаковый фон для всех */
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 16px;
     padding: 20px;
     color: var(--text-color);
     font-size: 1.1rem;
     text-align: left;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     animation: optionEntrance 0.5s ease-out both;
 }
@@ -144,10 +145,12 @@ h2 {
     animation-delay: 0.4s;
 }
 
-.option-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
-    transform: translateX(4px);
+@media (hover: hover) {
+    .option-btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: translateX(4px);
+    }
 }
 
 .option-btn:active {
