@@ -186,7 +186,12 @@ var QUESTS = [
 ];
 
 function startApp() {
-    if (tg && tg.expand) tg.expand();
+    if (tg) {
+        if (tg.expand) tg.expand();
+        if (tg.ready) tg.ready();
+        // Легкая вибрация при запуске
+        if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+    }
     loadQuest();
 }
 
@@ -210,6 +215,9 @@ function loadQuest() {
         btn.className = 'option-btn';
         btn.innerText = opt.text;
         btn.onclick = function () {
+            // Вибрация на телефоне!
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+
             scores[opt.cat]++;
             currentStep++;
             if (currentStep < QUESTS.length) {
