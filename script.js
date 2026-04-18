@@ -246,8 +246,8 @@ function showFinish() {
     var fCont = document.getElementById('finish-container');
 
     if (pBar) pBar.style.width = '100%';
-    if (gCont) gCont.style.display = 'none';
-    if (fCont) fCont.style.display = 'block';
+    if (gCont) gCont.classList.add('hidden');
+    if (fCont) fCont.classList.remove('hidden');
 }
 
 // Запуск при полной загрузке
